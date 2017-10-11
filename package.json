@@ -1,0 +1,33 @@
+{
+	"name": "eye-pi",
+	"version": "1.0.0",
+	"description": "appliaction to view camera feed from a raspberry pi device with a camera",
+	"main": "index.js",
+	"scripts": {
+		"start": "node index.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/kyrim/eye-pi.git"
+	},
+	"keywords": [
+		"raspberry",
+		"pi",
+		"C++",
+		"node"
+	],
+	"author": "Kyrim steele",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/kyrim/eye-pi/issues"
+	},
+	"homepage": "https://github.com/kyrim/eye-pi",
+	"dependencies": {
+		"koa": "^2.3.0",
+		"koa-router": "^7.2.1"
+	},
+	"devDependencies": {
+		"eslint": "^4.8.0"
+	}
+}
