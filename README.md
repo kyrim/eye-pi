@@ -22,6 +22,7 @@ Open up localhost:3000, and view your camera streaming to the browser!
 
 ## Todos
  - Test on Raspberry Pi Zero
+ - Use faster and more efficient serialisation and deserialisation from C++ to Node (currently using JSON with Base64 encoding for the data, which is slow)
  - Use GridFS and MongoDB to store video and motion detection events.
  - Timeline view of motion detection events and scrubbing (in the browser).
  - Better motion detection implementation (currently very simple).
