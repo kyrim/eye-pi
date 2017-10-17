@@ -28,6 +28,8 @@
 		"cmake-js": "^3.5.0",
 		"koa": "^2.3.0",
 		"koa-router": "^7.2.1",
+		"koa-static": "^4.0.1",
+		"koa-websocket": "^4.0.0",
 		"nan": "^2.7.0",
 		"streaming-worker": "^1.0.1",
 		"streaming-worker-sdk": "^0.9.3"

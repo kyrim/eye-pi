@@ -8,9 +8,16 @@ find_package(OpenCV REQUIRED)
 
 include_directories(/usr/include/)
 
-#file(GLOB SOURCE_FILES "native/*.cpp" "native/Camera/*.cpp" "native/MotionDetection/*.h")
+file(GLOB SOURCE_FILES 
+	"native/*.cpp" 
+	"native/Camera/*.cpp" 
+	"native/Camera/*.hpp" 
+	"native/MotionDetection/*.hpp" 
+	"native/MotionDetection/*.cpp" 
+	"native/Utility/*.hpp" 
+	"native/Utility/*.cpp")
 
-file(GLOB SOURCE_FILES "native/test.cpp")
+#file(GLOB SOURCE_FILES "native/test.cpp")
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
