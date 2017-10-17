@@ -2,6 +2,7 @@
 #include "MotionDetection/MotionDetector.hpp"
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include <nan.h>
 
 using namespace std;
 
