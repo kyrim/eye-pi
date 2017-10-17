@@ -1,17 +1,16 @@
 # Eye Pi
-
-Eye Pi is a C++ and Node implementation of motion detection (using OpenCV) to be used on a RaspberryPi Zero with a camera, and streamed to a browser.
+Eye Pi is a motion detection application written in C++ and Node.js for the [Raspberry Pi](https://www.raspberrypi.org/) with a camera attached.
 
 ### Current implementation
- - OpenCV detection of movement (simple implementation for now)
- - C++ to Node communication using [Node.js Native abstractions](https://github.com/nodejs/nan)
- - Uses [cmake-js](https://github.com/cmake-js/cmake-js) and [CMake](https://cmake.org/), rather than node-gyp for easier OpenCV compiling
- - Streaming to the browser using WebSockets
+ - OpenCV detection of movement.
+ - C++ to Node communication using [Node.js Native abstractions](https://github.com/nodejs/nan)..
+ - Uses [cmake-js](https://github.com/cmake-js/cmake-js) and [CMake](https://cmake.org/), rather than node-gyp for easier OpenCV compiling.
+ - Streaming of camera frames to the browser using WebSockets.
  
 ### Todos
- - Use GridFS and MongoDB to store video and motion detection events
- - Timeline view of motion detection events and scrubbing (in browser)
- - Better motion detection
+ - Use GridFS and MongoDB to store video and motion detection events.
+ - Timeline view of motion detection events and scrubbing (in the browser).
+ - Better motion detection implementation (currently very simple).
 
 License
 ----
