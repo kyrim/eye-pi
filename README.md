@@ -3,7 +3,7 @@ Eye Pi is a motion detection application written in C++ and Node.js for the [Ras
 
 ### Current implementation
  - OpenCV detection of movement.
- - C++ to Node communication using [Node.js Native abstractions](https://github.com/nodejs/nan)..
+ - C++ to Node communication using [Node.js Native abstractions](https://github.com/nodejs/nan).
  - Uses [cmake-js](https://github.com/cmake-js/cmake-js) and [CMake](https://cmake.org/), rather than node-gyp for easier OpenCV compiling.
  - Streaming of camera frames to the browser using WebSockets.
  
