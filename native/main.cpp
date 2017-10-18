@@ -48,10 +48,6 @@ class EyePi : public StreamingWorker
 
 			auto frame = m_frame->getFrame();
 			auto rect = m_frame->getRectangle();
-			auto fps = cv::getTickFrequency() / (cv::getTickCount() - start);
-
-			cv::putText(frame, std::to_string(fps), textPoint, cv::FONT_HERSHEY_SIMPLEX,
-						0.8, textScalar);
 
 			handleFrame(frame, move(rect));
 
@@ -67,10 +63,15 @@ class EyePi : public StreamingWorker
 			for (int i = 0; i < buf.size(); i++)
 				enc_msg[i] = buf[i];
 
-			data["sensor"] = "sensor";
+			auto hasMotion = rect != nullptr;
+			data["motionRect"]["hasMotion"] = hasMotion;
+			data["motionRect"]["x"] = hasMotion ? rect->x : 0;
+			data["motionRect"]["y"] = hasMotion ? rect->y : 0;
+			data["motionRect"]["width"] = hasMotion ? rect->width : 0;
+			data["motionRect"]["height"] = hasMotion ? rect->height : 0;
 			data["frame"] = base64_encode(enc_msg, buf.size());
 
-			Message tosend("eyepi", data.dump());
+			Message tosend("newframe", data.dump());
 			writeToNode(progress, tosend);
 		}
 	}

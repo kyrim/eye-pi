@@ -20,13 +20,14 @@
 
 <body>
 	<img alt="" src="">
+	<script src="/socket.io/socket.io.js"></script>
 	<script>
-		var s = new WebSocket("ws://localhost:3000/stream", []);
+		var socket = io();
 		var img = document.querySelector('img');
 
-		s.onmessage = function (event) {
-			img.src = 'data:image/jpeg;base64,' + event.data;
-		};
+		socket.on('newframe', (data) => {
+			img.src = 'data:image/jpeg;base64,' + data;
+		});
 	</script>
 </body>
 
