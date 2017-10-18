@@ -4,7 +4,7 @@
   <h3 align="center">Eye Pi</h3>
 
   <p align="center">
-	Eye Pi is a motion detection application written in C++ and Node.js for the [Raspberry Pi](https://www.raspberrypi.org/) with a camera attached.
+	Eye Pi is a motion detection application written in C++ and Node.js for the <a href="https://www.raspberrypi.org/">Raspberry Pi</a> with a camera attached.
 </p>
 
 ## Current implementation
