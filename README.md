@@ -1,5 +1,11 @@
-# Eye Pi
-Eye Pi is a motion detection application written in C++ and Node.js for the [Raspberry Pi](https://www.raspberrypi.org/) with a camera attached.
+<p align="center">
+    <img src="https://raw.githubusercontent.com/kyrim/eye-pi/master/client/favicon-96x96.png" alt="" width=96 height=96>
+
+  <h3 align="center">Eye Pi</h3>
+
+  <p align="center">
+	Eye Pi is a motion detection application written in C++ and Node.js for the [Raspberry Pi](https://www.raspberrypi.org/) with a camera attached.
+</p>
 
 ## Current implementation
  - OpenCV detection of movement.
