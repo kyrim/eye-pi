@@ -9,14 +9,14 @@ const through = require("through");
 const worker = require("streaming-worker");
 
 const addon_path = path.join(__dirname, "./build/Release/eye-pi");
-const eye_pi = worker(addon_path);
+const staticDirectory = path.join(__dirname, "./client");
+
+const PORT = 3000;
 
 const app = new Koa();
 const router = new Router();
 const eyePiSocket = new IO();
-
-const PORT = 3000;
-const staticDirectory = __dirname + "/client";
+const eye_pi = worker(addon_path);
 
 app.use(compress());
 app.use(Serve(staticDirectory));
@@ -31,11 +31,12 @@ eyePiSocket.on("disconnect", ctx => {
   console.log(`'${ctx.socket.id}' left the stream`);
 });
 
-eye_pi.from.on("newframe", function(value) {
-  var json = JSON.parse(value);
-  var frame = json.frame;
-  eyePiSocket.broadcast("newframe", frame);
-});
+eye_pi.from.stream().pipe(
+  through(data => {
+    const json = JSON.parse(data[1]);
+    eyePiSocket.broadcast("newframe", json.frame);
+  })
+);
 
 console.log(`Starting on port: ${PORT}`);
 app.listen(PORT);

@@ -69,7 +69,10 @@ class EyePi : public StreamingWorker
 			data["motionRect"]["y"] = hasMotion ? rect->y : 0;
 			data["motionRect"]["width"] = hasMotion ? rect->width : 0;
 			data["motionRect"]["height"] = hasMotion ? rect->height : 0;
-			data["frame"] = base64_encode(enc_msg, buf.size());
+
+			data["frame"]["width"] = frame.cols;
+			data["frame"]["height"] = frame.rows;
+			data["frame"]["data"] = base64_encode(enc_msg, buf.size());
 
 			Message tosend("newframe", data.dump());
 			writeToNode(progress, tosend);
