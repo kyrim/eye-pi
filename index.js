@@ -35,17 +35,9 @@ router.get("/mjpeg", (ctx, next) => {
   //const output = new stream.PassThrough();
   eye_pi.from.stream().pipe(
     through(function(data) {
-      const json = JSON.parse(data[1]);
+      //   const json = JSON.parse(data[1]);
 
-      //const buffer = Buffer.from(json.frame.data, "base64");
-      ctx.res.write("--myboundary\r\n");
-      ctx.res.write("Content-Type: image/jpeg\r\n");
-      ctx.res.write("Content-Length: " + content.length + "\r\n");
-      ctx.res.write("\r\n");
-      ctx.res.write(Buffer.from(json.frame.data, "base64"), "binary");
-      ctx.res.write("\r\n");
-
-      this.queue(data);
+      this.queue(data[1]);
     })
   );
 

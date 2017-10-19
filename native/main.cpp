@@ -1,6 +1,9 @@
 #include "Camera/CameraStreamer.hpp"
 #include "MotionDetection/MotionDetector.hpp"
+
 #include <iostream>
+#include <chrono>
+
 #include <opencv2/opencv.hpp>
 #include "streaming-worker.h"
 #include "Utility/json.hpp"
@@ -8,6 +11,8 @@
 
 using namespace std;
 using json = nlohmann::json;
+
+typedef std::chrono::high_resolution_clock Clock;
 
 void handleFrame(cv::UMat &frame, std::unique_ptr<cv::Rect> rect_ptr)
 {
@@ -33,46 +38,61 @@ class EyePi : public StreamingWorker
 	{
 		CameraStreamer cam(0);
 		MotionDetector motion_detector(cam);
-		auto textPoint = cv::Point(30, 30);
-		auto textScalar = cv::Scalar(0, 0, 255);
 
-		json sample;
+		auto timesCreatedVideo = 0;
+		auto codec = CV_FOURCC('M', 'J', 'P', 'G');
+		auto fps = 25.0;
 
-		while (!closed())
+		auto haveFirstFrame = false;
+
+		cv::Size frameSize;
+		while (!haveFirstFrame)
 		{
-			auto start = cv::getTickCount();
 			auto m_frame = motion_detector.getNextFrame();
-
 			if (m_frame == nullptr)
 				continue;
 
 			auto frame = m_frame->getFrame();
-			auto rect = m_frame->getRectangle();
+			frameSize = frame.size();
 
-			handleFrame(frame, move(rect));
+			haveFirstFrame = true;
+		}
+
+		while (!closed())
+		{
+			cv::VideoWriter outputVideo;
+			outputVideo.open(("./data/" + to_string(timesCreatedVideo++) + ".mp4"), codec, fps, frameSize, true);
+			if (!outputVideo.isOpened())
+				return;
+
+			auto t1 = Clock::now();
+
+			while (std::chrono::duration_cast<std::chrono::seconds>(Clock::now() - t1).count() < 1)
+			{
+				auto m_frame = motion_detector.getNextFrame();
+
+				if (m_frame == nullptr)
+					continue;
+
+				outputVideo << m_frame->getFrame().getMat(cv::ACCESS_READ);
+			}
+			// auto frame = m_frame->getFrame();
+			// auto rect = m_frame->getRectangle();
+
+			// handleFrame(frame, move(rect));
 
 			json data;
+			data["0"] = 1;
+			// auto hasMotion = rect != nullptr;
+			// data["motionRect"]["hasMotion"] = hasMotion;
+			// data["motionRect"]["x"] = hasMotion ? rect->x : 0;
+			// data["motionRect"]["y"] = hasMotion ? rect->y : 0;
+			// data["motionRect"]["width"] = hasMotion ? rect->width : 0;
+			// data["motionRect"]["height"] = hasMotion ? rect->height : 0;
 
-			cv::Mat mat = frame.getMat(cv::ACCESS_READ);
-			int len = mat.total() * mat.elemSize();
-
-			std::vector<uchar> buf;
-			imencode(".jpg", frame, buf);
-			uchar *enc_msg = new uchar[buf.size()];
-
-			for (int i = 0; i < buf.size(); i++)
-				enc_msg[i] = buf[i];
-
-			auto hasMotion = rect != nullptr;
-			data["motionRect"]["hasMotion"] = hasMotion;
-			data["motionRect"]["x"] = hasMotion ? rect->x : 0;
-			data["motionRect"]["y"] = hasMotion ? rect->y : 0;
-			data["motionRect"]["width"] = hasMotion ? rect->width : 0;
-			data["motionRect"]["height"] = hasMotion ? rect->height : 0;
-
-			data["frame"]["width"] = frame.cols;
-			data["frame"]["height"] = frame.rows;
-			data["frame"]["data"] = base64_encode(enc_msg, buf.size());
+			// data["frame"]["width"] = frame.cols;
+			// data["frame"]["height"] = frame.rows;
+			// data["frame"]["data"] = base64_encode(enc_msg, buf.size());
 
 			Message tosend("newframe", data.dump());
 			writeToNode(progress, tosend);

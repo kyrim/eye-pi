@@ -22,5 +22,9 @@ file(GLOB SOURCE_FILES
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
 
+find_path( AVCODEC_INCLUDE_DIR libavcodec/avcodec.h )
+find_library( AVCODEC_LIBRARY avcodec )
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${AVCODEC_INCLUDE_DIR} )
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_JS_INC} "${CMAKE_SOURCE_DIR}/node_modules/streaming-worker-sdk")
-target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} ${OpenCV_LIBS})
+target_link_libraries(${PROJECT_NAME} ${CMAKE_JS_LIB} ${OpenCV_LIBS} ${AVCODEC_LIBRARY})
