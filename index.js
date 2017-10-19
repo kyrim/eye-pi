@@ -5,8 +5,10 @@ const IO = require("koa-socket");
 const Router = require("koa-router");
 var compress = require("koa-compress");
 const path = require("path");
+const stream = require("stream");
 const through = require("through");
 const worker = require("streaming-worker");
+const ffmpeg = require("fluent-ffmpeg");
 
 const addon_path = path.join(__dirname, "./build/Release/eye-pi");
 const staticDirectory = path.join(__dirname, "./client");
@@ -19,9 +21,45 @@ const eyePiSocket = new IO();
 const eye_pi = worker(addon_path);
 
 app.use(compress());
-app.use(Serve(staticDirectory));
-app.use(router.routes());
 eyePiSocket.attach(app);
+app.use(Serve(staticDirectory));
+
+router.get("/mjpeg", (ctx, next) => {
+  ctx.set("Content-Type", "multipart/x-mixed-replace; boundary=theboundary"),
+    ctx.set("Cache-Control", "no-cache"),
+    ctx.set("Connection", "close"),
+    ctx.set("Pragma", "no-cache");
+
+  ctx.status = 200;
+
+  //const output = new stream.PassThrough();
+  eye_pi.from.stream().pipe(
+    through(function(data) {
+      const json = JSON.parse(data[1]);
+
+      //const buffer = Buffer.from(json.frame.data, "base64");
+      ctx.res.write("--myboundary\r\n");
+      ctx.res.write("Content-Type: image/jpeg\r\n");
+      ctx.res.write("Content-Length: " + content.length + "\r\n");
+      ctx.res.write("\r\n");
+      ctx.res.write(Buffer.from(json.frame.data, "base64"), "binary");
+      ctx.res.write("\r\n");
+
+      this.queue(data);
+    })
+  );
+
+  //   ctx.body = ffmpeg()
+  //     .on("error", function(err, stdout, stderr) {
+  //       console.log("Cannot process video: " + err.message);
+  //     })
+  //     .input(eyePiStream)
+  //     .inputFormat("image2pipe")
+  //     .pipe(output);
+});
+
+app.use(router.routes());
+app.use(router.allowedMethods());
 
 eyePiSocket.on("connection", (ctx, data) => {
   console.log(`'${ctx.socket.id}' joined the stream`);
@@ -34,7 +72,7 @@ eyePiSocket.on("disconnect", ctx => {
 eye_pi.from.stream().pipe(
   through(data => {
     const json = JSON.parse(data[1]);
-    eyePiSocket.broadcast("newframe", json.frame);
+    //eyePiSocket.broadcast("newframe", json.frame);
   })
 );
 

@@ -28,17 +28,21 @@
 </head>
 
 <body>
-	<img alt="" src="">
+	<img src='/mjpeg'>
+
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
-		var socket = io();
-		var img = document.querySelector('img');
+		// document.addEventListener('DOMContentLoaded', init, false);
 
-		socket.on('newframe', frame => {
-			img.width = frame.width;
-			img.height = frame.height;
-			img.src = 'data:image/jpeg;base64,' + frame.data;
-		});
+		// function init() {
+		// 	const VP = document.getElementById('videoPlayer')
+		// 	const VPToggle = document.getElementById('toggleButton')
+
+		// 	VPToggle.addEventListener('click', function () {
+		// 		if (VP.paused) VP.play()
+		// 		else VP.pause()
+		// 	})
+		// }
 	</script>
 </body>
 

@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://raw.githubusercontent.com/kyrim/eye-pi/master/client/favicon-96x96.png" alt="" width=96 height=96>
+    <img src="https://raw.githubusercontent.com/kyrim/eye-pi/master/client/img/favicon-96x96.png" alt="" width=96 height=96>
 
   <h3 align="center">Eye Pi</h3>
 
