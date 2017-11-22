@@ -2,6 +2,7 @@
 #include "MotionDetection/MotionDetector.hpp"
 
 #include <iostream>
+#include <cstdio>
 #include <chrono>
 
 #include <opencv2/opencv.hpp>
@@ -34,55 +35,100 @@ class EyePi : public StreamingWorker
 	{
 	}
 
-	void Execute(const AsyncProgressWorker::ExecutionProgress &progress)
+	cv::Size GetFirstFrameSize(MotionDetector &motion_detector)
 	{
-		CameraStreamer cam(0);
-		MotionDetector motion_detector(cam);
-
-		auto timesCreatedVideo = 0;
-		auto codec = CV_FOURCC('M', 'J', 'P', 'G');
-		auto fps = 25.0;
-
-		auto haveFirstFrame = false;
-
-		cv::Size frameSize;
-		while (!haveFirstFrame)
+		while (!closed())
 		{
 			auto m_frame = motion_detector.getNextFrame();
 			if (m_frame == nullptr)
 				continue;
 
-			auto frame = m_frame->getFrame();
-			frameSize = frame.size();
-
-			haveFirstFrame = true;
+			return m_frame->getFrame().size();
 		}
+	}
+
+	bool CreateBufferFile(MotionDetector &motion_detector,
+						  string bufferFilePath,
+						  int codec,
+						  int fps,
+						  cv::Size frameSize,
+						  int bufferSizeInSeconds)
+	{
+		cv::VideoWriter outputVideo;
+		outputVideo.open(bufferFilePath, codec, fps, frameSize, true);
+
+		if (!outputVideo.isOpened())
+			return false;
+
+		// Buffer frames into a mp4 file of 1 second length
+		auto t1 = Clock::now();
+		while (std::chrono::duration_cast<std::chrono::seconds>(Clock::now() - t1).count() < 1)
+		{
+			auto m_frame = motion_detector.getNextFrame();
+
+			if (m_frame == nullptr)
+				continue;
+			outputVideo << m_frame->getFrame().getMat(cv::ACCESS_READ);
+		}
+
+		return true;
+	}
+
+	int ReadBufferFile(string bufferFilePath, unsigned char *bufferFile)
+	{
+		streampos size = 0;
+		ifstream file(bufferFilePath, ios::in | ios::binary | ios::ate);
+
+		if (file.is_open())
+		{
+			size = file.tellg();
+			bufferFile = new unsigned char[size];
+			file.seekg(0, ios::beg);
+			file.read((char *)bufferFile, size);
+			file.close();
+		}
+
+		return size;
+	}
+
+	void Execute(const AsyncProgressWorker::ExecutionProgress &progress)
+	{
+		CameraStreamer cam(0);
+		MotionDetector motion_detector(cam);
+
+		string filename = "buffer";
+
+		string bufferFilePath = "./data/" + filename + ".mp4";
+		string bufferFragFilePath = "./data/" + filename + "-frag.mp4";
+
+		std::remove(bufferFilePath.c_str());
+		std::remove(bufferFragFilePath.c_str());
+
+		auto fps = 25.0;
+		cv::Size frameSize = GetFirstFrameSize(motion_detector);
 
 		while (!closed())
 		{
-			cv::VideoWriter outputVideo;
-			outputVideo.open(("./data/" + to_string(timesCreatedVideo++) + ".mp4"), codec, fps, frameSize, true);
-			if (!outputVideo.isOpened())
+			if (!CreateBufferFile(motion_detector, bufferFilePath, CV_FOURCC('M', 'J', 'P', 'G'), fps, frameSize, 1))
 				return;
 
-			auto t1 = Clock::now();
+			// TODO: Compile this instead of having a file?
+			auto command = "mp4fragment --fragment-duration 1000 " + bufferFilePath + " " + bufferFragFilePath + "";
+			system(command.c_str());
+			std::remove(bufferFilePath.c_str());
 
-			while (std::chrono::duration_cast<std::chrono::seconds>(Clock::now() - t1).count() < 1)
-			{
-				auto m_frame = motion_detector.getNextFrame();
+			unsigned char *mp4FragmentData = nullptr;
+			unsigned int mp4FragmentDataSize = ReadBufferFile(bufferFragFilePath, mp4FragmentData);
+			std::remove(bufferFragFilePath.c_str());
 
-				if (m_frame == nullptr)
-					continue;
-
-				outputVideo << m_frame->getFrame().getMat(cv::ACCESS_READ);
-			}
+			if (mp4FragmentData == nullptr)
+				continue;
 			// auto frame = m_frame->getFrame();
 			// auto rect = m_frame->getRectangle();
 
 			// handleFrame(frame, move(rect));
 
 			json data;
-			data["0"] = 1;
 			// auto hasMotion = rect != nullptr;
 			// data["motionRect"]["hasMotion"] = hasMotion;
 			// data["motionRect"]["x"] = hasMotion ? rect->x : 0;
@@ -92,10 +138,13 @@ class EyePi : public StreamingWorker
 
 			// data["frame"]["width"] = frame.cols;
 			// data["frame"]["height"] = frame.rows;
-			// data["frame"]["data"] = base64_encode(enc_msg, buf.size());
+
+			data["frame"]["data"] = base64_encode(mp4FragmentData, mp4FragmentDataSize);
 
 			Message tosend("newframe", data.dump());
 			writeToNode(progress, tosend);
+
+			delete[] mp4FragmentData;
 		}
 	}
 };

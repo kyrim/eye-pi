@@ -24,7 +24,7 @@ app.use(compress());
 eyePiSocket.attach(app);
 app.use(Serve(staticDirectory));
 
-router.get("/mjpeg", (ctx, next) => {
+router.get("/stream", (ctx, next) => {
   ctx.set("Content-Type", "multipart/x-mixed-replace; boundary=theboundary"),
     ctx.set("Cache-Control", "no-cache"),
     ctx.set("Connection", "close"),
@@ -32,22 +32,14 @@ router.get("/mjpeg", (ctx, next) => {
 
   ctx.status = 200;
 
-  //const output = new stream.PassThrough();
   eye_pi.from.stream().pipe(
     through(function(data) {
-      //   const json = JSON.parse(data[1]);
+      const json = JSON.parse(data[1]);
 
-      this.queue(data[1]);
+      var base64Encodedmp4 = json.frame.data;
+      var buf = Buffer.from(b64string, "base64");
     })
   );
-
-  //   ctx.body = ffmpeg()
-  //     .on("error", function(err, stdout, stderr) {
-  //       console.log("Cannot process video: " + err.message);
-  //     })
-  //     .input(eyePiStream)
-  //     .inputFormat("image2pipe")
-  //     .pipe(output);
 });
 
 app.use(router.routes());
